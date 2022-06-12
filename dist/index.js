@@ -7,12 +7,24 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var cors_1 = __importDefault(require("cors"));
 var express_1 = __importDefault(require("express"));
 //internal import
+var db_1 = __importDefault(require("./src/util/db"));
+var routes_1 = __importDefault(require("./src/routes"));
 //middleware
 require("dotenv").config();
 var app = express_1.default();
 app.use(express_1.default.json());
 app.use(cors_1.default());
-//db connection
+// mongoDB connection, just pass the mongo url
+new db_1.default(process.env.mongoURL);
+app.use("/api", routes_1.default);
+// default error handlers
+var errorHandlers = function (err, req, res, next) {
+    if (res.headersSent) {
+        return next(err);
+    }
+    res.status(500).json({ error: err });
+};
+app.use(errorHandlers);
 //routes
 app.get("/", function (req, res) {
     res.send("Hello world!!");
